@@ -16,14 +16,14 @@ def configure_subparsers(subparsers: SubParser):
         metavar="TEMPLATE",
         type=str,
         default=None,
-        help="Path to the template.",
+        help="Path to the template [default: None]",
     )
     parser.add_argument(
         "--save",
         "-s",
         default=False,
         action="store_true",
-        help="Save the template in a folder",
+        help="Save the template in the 'templates' folder [default: False]",
     )
     parser.add_argument(
         "--threshold",
@@ -31,14 +31,14 @@ def configure_subparsers(subparsers: SubParser):
         metavar="THRESHOLD",
         type=float,
         default=0.8,
-        help="Threshold for the template matcher",
+        help="Threshold for the template matcher [default: 0.8]",
     )
     parser.add_argument(
         "--gaussian-blur",
         "-gb",
         default=False,
         action="store_true",
-        help="Apply Gaussian Blur to remove edges",
+        help="Apply Gaussian Blur to remove edges [default: False]",
     )
     parser.add_argument(
         "--binarize",
@@ -55,7 +55,7 @@ def configure_subparsers(subparsers: SubParser):
         type=int,
         nargs=2,
         default=None,
-        help="Apply Canny edge extractor to the image",
+        help="Apply Canny edge extractor to the image [default: None]",
     )
     parser.set_defaults(func=main)
     parser.set_defaults(name="tm_preprocess")
@@ -78,19 +78,19 @@ def main(args, frame, frame_idx):
             args.template = frame[y : y + h, x : x + w]
         else:
             args.template = cv.imread(args.template, cv.IMREAD_GRAYSCALE)
+            if args.gaussian_blur:
+                args.template = cv.GaussianBlur(args.template, (5, 5), 0)
+            if args.binarize is not None:
+                _, args.template = cv.threshold(
+                    args.template, *args.binarize, cv.THRESH_BINARY_INV
+                )
+            if args.canny is not None:
+                args.template = cv.Canny(args.template, *args.canny)
 
-        if args.save:
-            n = datetime.now()
-            cv.imwrite(f"templates/{str(n)}.jpg", args.template)
+            if args.save:
+                n = datetime.now()
+                cv.imwrite(f"templates/{str(n)}.jpg", args.template)
 
-        if args.gaussian_blur:
-            args.template = cv.GaussianBlur(args.template, (5, 5), 0)
-        if args.binarize is not None:
-            _, args.template = cv.threshold(
-                args.template, *args.binarize, cv.THRESH_BINARY_INV
-            )
-        if args.canny is not None:
-            args.template = cv.Canny(args.template, *args.canny)
         cv.imshow("template", args.template)
 
     return frame

@@ -37,14 +37,14 @@ def get_args():
         metavar="MAX_FRAMES",
         default="1000",
         type=int,
-        help="Max number of frame to analyse in the video.",
+        help="Max number of frame to analyse in the video [default: 1000]",
     )
     parser.add_argument(
         "--scale",
         "-s",
         metavar="SCALE",
         type=float,
-        help="Size for rescaling the video",
+        help="Size for rescaling the video [default: 0.2]",
         default="0.2",
     )
     parser.add_argument(
@@ -52,8 +52,16 @@ def get_args():
         "-sr",
         metavar="SAMPLING_RATE",
         type=int,
-        help="Sampling rate for updating keypoints",
+        help="Sampling rate for updating keypoints [default: 50]",
         default="50",
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        metavar="VIDEO_NAME",
+        type=str,
+        help="If specified, saves the video as 'VIDEO_NAME' using the provided format [default: None]",
+        default=None,
     )
 
     # subparsers
@@ -98,8 +106,6 @@ def main(args):
     prev_frame = None
     prev_corners = None
     prev_des = None
-    last_mes = None
-    last_pre = None
     kalman = None
 
     for i in range(args.max_frames):
@@ -108,6 +114,7 @@ def main(args):
 
         # Capture frame-by-frame
         ret, frame = cap.read()
+
         # If video end reached
         if not ret:
             break
@@ -120,7 +127,9 @@ def main(args):
                 args, frame, frame_gray, i, prev_frame, prev_corners
             )
         elif args.algorithm == "bfm":
-            to_display, prev_des = bfm(args, frame, frame_gray, i, prev_des)
+            to_display, prev_frame, prev_des = bfm(
+                args, frame, frame_gray, i, prev_frame, prev_des
+            )
         elif args.algorithm == "mtm":
             to_display = multiple_template_matching(args, frame, frame_gray, i)
         elif args.algorithm == "k":
@@ -138,8 +147,19 @@ def main(args):
 
         cv.imshow(*to_display)
 
+        if args.output:
+            if i == 0:
+                fourcc = cv.VideoWriter_fourcc(*"mp4v")
+                out = cv.VideoWriter(
+                    args.output,
+                    fourcc,
+                    20.0,
+                    (to_display[-1].shape[1], to_display[-1].shape[0]),
+                )
+            out.write(to_display[-1])
+
         # Wait and exit if q is pressed
-        if cv.waitKey(30) == ord("q") or not ret:
+        if cv.waitKey(1) == ord("q") or not ret:
             break
 
     # When everything done, release the capture
@@ -173,13 +193,12 @@ def lk(args, frame, frame_gray, frame_idx, prev_frame=None, prev_corners=None):
     )
 
 
-def bfm(args, frame, frame_gray, frame_idx, prev_des=None):
+def bfm(args, frame, frame_gray, frame_idx, prev_frame=None, prev_des=None):
     frame_bfm = frame.copy()
     if frame_idx % args.sampling_rate == 0:
         prev_kp, prev_des = args.func(args, frame_gray)
         prev_kp = convert_kp2np(prev_kp)
-        prev_kp = draw_points(prev_kp, frame.copy())
-        cv.imshow("previous keypoints", prev_kp)
+        prev_frame = draw_points(prev_kp, frame.copy())
 
     kp, des = args.func(args, frame_gray)
     bf = cv.BFMatcher()
@@ -192,9 +211,11 @@ def bfm(args, frame, frame_gray, frame_idx, prev_des=None):
 
     pts = convert_kp2np(good)
     frame_bfm = draw_points(pts, frame_bfm)
-    to_display = prepare_output(frame, frame_bfm)
+    to_display = prepare_output(prev_frame, frame)
+    to_display = prepare_output(to_display, frame_bfm)
     return (
         ("BruteForceMatcher with {}".format(args.name), to_display),
+        prev_frame,
         prev_des,
     )
 
@@ -206,6 +227,15 @@ def multiple_template_matching(args, frame, frame_gray, frame_idx):
 
     frame_tm = frame.copy()
     loc = np.where(res >= args.threshold)
+    cv.putText(
+        frame_tm,
+        text="OBJECTS DETECTED: {}".format(len(loc[0])),
+        org=(20, 50),
+        fontFace=cv.FONT_HERSHEY_DUPLEX,
+        fontScale=1,
+        color=(0, 0, 255),
+        thickness=2,
+    )
     for pt in zip(*loc[::-1]):
         cv.rectangle(frame_tm, pt, (pt[0] + w, pt[1] + h), (0, 0, 255), 2)
 

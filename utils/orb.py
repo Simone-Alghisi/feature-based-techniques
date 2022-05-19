@@ -10,7 +10,7 @@ def configure_subparsers(subparsers: SubParser):
         metavar="N_FEATURES",
         type=int,
         default=100,
-        help="The number of best features to retain",
+        help="The number of best features to retain [default: 100]",
     )
     parser.add_argument(
         "--scale-factor",
@@ -18,7 +18,7 @@ def configure_subparsers(subparsers: SubParser):
         metavar="SCALE_FACTOR",
         type=float,
         default=1.2,
-        help="The pyramid decimation ratio",
+        help="The pyramid decimation ratio [default: 1.2]",
     )
     parser.add_argument(
         "--n-levels",
@@ -26,7 +26,7 @@ def configure_subparsers(subparsers: SubParser):
         metavar="N_LEVELS",
         type=int,
         default=8,
-        help="The numer of layers in the pyramid",
+        help="The numer of layers in the pyramid [default: 8]",
     )
 
     parser.set_defaults(func=main)

@@ -10,7 +10,7 @@ def configure_subparsers(subparsers: SubParser):
         metavar="N_FEATURES",
         type=int,
         default=100,
-        help="The number of best features to retain",
+        help="The number of best features to retain [default: 100]",
     )
     parser.add_argument(
         "--n-layers",
@@ -18,7 +18,7 @@ def configure_subparsers(subparsers: SubParser):
         metavar="N_OCTAVE_ALYERS",
         type=int,
         default=3,
-        help="The number of layers in each octave",
+        help="The number of layers in each octave [default: 3]",
     )
     parser.add_argument(
         "--sigma",
@@ -26,7 +26,7 @@ def configure_subparsers(subparsers: SubParser):
         metavar="SIGMA",
         type=float,
         default=1.6,
-        help="Sigma value to apply at the first layer in each octave",
+        help="Sigma value to apply at the first layer in each octave [default: 1.6]",
     )
 
     parser.set_defaults(func=main)

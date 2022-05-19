@@ -13,7 +13,7 @@ def configure_subparsers(subparsers: SubParser):
         metavar="MAX_CORNERS",
         type=int,
         default=100,
-        help="Returns at most MAX_CORNERS",
+        help="Returns at most MAX_CORNERS [default: 100]",
     )
     parser.add_argument(
         "--quality",
@@ -21,7 +21,7 @@ def configure_subparsers(subparsers: SubParser):
         metavar="QUALITY",
         type=float,
         default=0.01,
-        help="Threshold for how good the corners should be",
+        help="Threshold for how good the corners should be [default: 0.01]",
     )
     parser.add_argument(
         "--min-distance",
@@ -29,7 +29,7 @@ def configure_subparsers(subparsers: SubParser):
         metavar="MIN_DISTANCE",
         type=float,
         default=10,
-        help="Minimum possible euclidean distance between the corners",
+        help="Minimum possible euclidean distance between the corners [default: 10]",
     )
     parser.add_argument(
         "--block-size",
@@ -37,14 +37,14 @@ def configure_subparsers(subparsers: SubParser):
         metavar="BLOCK_SIZE",
         type=int,
         default=3,
-        help="size of an average block for computing a derivative matrix",
+        help="size of an average block for computing a derivative matrix [default: 3]",
     )
     parser.add_argument(
         "--harris",
         metavar="K_HARRIS",
         type=float,
         default=None,
-        help="If set, uses the Harris detector for the corners. It also needs the K parameter",
+        help="If set, uses the Harris detector for the corners. It also needs the K parameter [default: None]",
     )
     parser.set_defaults(func=main)
     parser.set_defaults(name="gftt")
