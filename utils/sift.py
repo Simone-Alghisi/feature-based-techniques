@@ -15,7 +15,7 @@ def configure_subparsers(subparsers: SubParser):
     parser.add_argument(
         "--n-layers",
         "-nl",
-        metavar="N_OCTAVE_ALYERS",
+        metavar="N_OCTAVE_LAYERS",
         type=int,
         default=3,
         help="The number of layers in each octave [default: 3]",
